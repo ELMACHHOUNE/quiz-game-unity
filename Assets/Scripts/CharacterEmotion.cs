@@ -111,9 +111,9 @@ public class CharacterEmotion : MonoBehaviour
         {
             float t = Time.time;
 
-            if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 1.5f) * 2f);
-            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 2f) * 3f);
-            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, Mathf.Cos(t * 2f) * 3f);
+            if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 1.5f) * 1f);
+            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 0.15f) * 1.5f);
+            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, Mathf.Cos(t * 0.15f) * 1.5f);
 
             yield return null;
         }
@@ -150,9 +150,9 @@ public class CharacterEmotion : MonoBehaviour
         {
             timer += Time.deltaTime;
 
-            if (head != null) head.localRotation = Quaternion.Euler(0, 0, 15f + Mathf.Sin(timer * 2f) * 3f);
-            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, -20f + Mathf.Sin(timer * 4f) * 2f);
-            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, 20f + Mathf.Cos(timer * 4f) * 2f);
+            if (head != null) head.localRotation = Quaternion.Euler(0, 0, 6f + Mathf.Sin(timer * 2f) * 1.5f);
+            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, -20f + Mathf.Sin(timer * 1.5f) * 2f);
+            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, 20f + Mathf.Cos(timer * 1.5f) * 2f);
 
             yield return null;
         }
@@ -182,7 +182,7 @@ public class CharacterEmotion : MonoBehaviour
 
                 if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, 100f * Mathf.Sin(t * Mathf.PI));
                 if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, -100f * Mathf.Sin(t * Mathf.PI));
-                if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 2) * 10f);
+                if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 2) * 4f);
 
                 yield return null;
             }
@@ -217,7 +217,7 @@ public class CharacterEmotion : MonoBehaviour
 
         for (int i = 0; i < 4; i++)
         {
-            if (head != null) head.localRotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
+            if (head != null) head.localRotation = Quaternion.Euler(0, 0, Random.Range(-5f, 5f));
             if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, Random.Range(35f, 55f));
             if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, Random.Range(-35f, -55f));
 
@@ -267,7 +267,7 @@ public class CharacterEmotion : MonoBehaviour
             {
                 t += Time.deltaTime / duration;
 
-                if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 4f) * 15f);
+                if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 4f) * 6f);
                 if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, 150f * Mathf.Sin(t * Mathf.PI));
                 if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, -150f * Mathf.Sin(t * Mathf.PI));
 
