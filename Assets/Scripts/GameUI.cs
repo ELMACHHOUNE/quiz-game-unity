@@ -281,9 +281,9 @@ public class GameUI : MonoBehaviour
         ert.anchorMin = new Vector2(1, 0);
         ert.anchorMax = new Vector2(1, 0);
         ert.pivot = new Vector2(1, 0);
-        ert.sizeDelta = new Vector2(100, 40);
-        ert.anchoredPosition = new Vector3(-15, 15, 0);
-        GameObject exitText = CreateTextInParent(exitBtnGO, "\u2630 MENU", 18, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        ert.sizeDelta = new Vector2(200, 70);
+        ert.anchoredPosition = new Vector3(-25, 25, 0);
+        GameObject exitText = CreateTextInParent(exitBtnGO, "\u2630 MENU", 32, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         exitText.GetComponent<Text>().font = font;
         exitText.GetComponent<Text>().fontStyle = FontStyle.Bold;
         eBtn.onClick.AddListener(() =>
@@ -309,9 +309,9 @@ public class GameUI : MonoBehaviour
         srt.anchorMin = new Vector2(0, 0);
         srt.anchorMax = new Vector2(0, 0);
         srt.pivot = new Vector2(0, 0);
-        srt.sizeDelta = new Vector2(120, 40);
-        srt.anchoredPosition = new Vector3(15, 15, 0);
-        GameObject soundText = CreateTextInParent(soundBtnGO, AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 18, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        srt.sizeDelta = new Vector2(240, 70);
+        srt.anchoredPosition = new Vector3(25, 25, 0);
+        GameObject soundText = CreateTextInParent(soundBtnGO, AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 28, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         soundText.GetComponent<Text>().font = font;
         soundText.GetComponent<Text>().fontStyle = FontStyle.Bold;
         sBtn.onClick.AddListener(() =>
@@ -336,32 +336,49 @@ public class GameUI : MonoBehaviour
 
         gameObject.AddComponent<QuestionGenerator>();
 
-        GameObject charGO = new GameObject("Character");
-        charGO.transform.SetParent(transform);
-        charGO.transform.localScale = new Vector3(3.5f, 3.5f, 1);
-        SpriteRenderer sr = charGO.AddComponent<SpriteRenderer>();
-        sr.sortingOrder = 5;
-
-        Texture2D charTex = Resources.Load<Texture2D>("ELMACHHOUNE");
-        if (charTex == null) charTex = Resources.Load<Texture2D>("character");
-        if (charTex != null)
-            sr.sprite = Sprite.Create(charTex, new Rect(0, 0, charTex.width, charTex.height), new Vector2(0.5f, 0.5f), Mathf.Max(charTex.width, charTex.height));
+        GameObject prefab = Resources.Load<GameObject>("CharacterPS-01");
+        if (prefab != null)
+        {
+            GameObject charInst = Instantiate(prefab);
+            charInst.name = "Character";
+            charInst.transform.SetParent(transform);
+            // The PSD is 100 PPU, meaning it is huge in world space (~18 units tall). We scale it down.
+            charInst.transform.localScale = new Vector3(0.18f, 0.18f, 1);
+            charInst.transform.position = new Vector3(-5.5f, 0.2f, 0);
+            charInst.AddComponent<CharacterAnchor>();
+            charInst.AddComponent<CharacterEmotion>();
+            // Add a script to make the children visible/animated properly if needed
+        }
         else
         {
-            Texture2D tex = new Texture2D(24, 24);
-            for (int x = 0; x < 24; x++)
-                for (int y = 0; y < 24; y++)
-                {
-                    if (x < 2 || x > 21 || y < 2 || y > 21) tex.SetPixel(x, y, Color.black);
-                    else if ((x == 8 || x == 15) && (y == 15 || y == 16)) tex.SetPixel(x, y, Color.white);
-                    else tex.SetPixel(x, y, new Color(0, 0.7f, 1));
-                }
-            tex.Apply();
-            sr.sprite = Sprite.Create(tex, new Rect(0, 0, 24, 24), new Vector2(0.5f, 0.5f), 24);
-        }
+            GameObject charGO = new GameObject("Character");
+            charGO.transform.SetParent(transform);
+            charGO.transform.localScale = new Vector3(3.5f, 3.5f, 1);
+            SpriteRenderer sr = charGO.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 5;
 
-        charGO.transform.position = new Vector3(-5.5f, 0.2f, 0);
-        charGO.AddComponent<CharacterEmotion>();
+            Texture2D charTex = Resources.Load<Texture2D>("ELMACHHOUNE");
+            if (charTex == null) charTex = Resources.Load<Texture2D>("character");
+            if (charTex != null)
+                sr.sprite = Sprite.Create(charTex, new Rect(0, 0, charTex.width, charTex.height), new Vector2(0.5f, 0.5f), Mathf.Max(charTex.width, charTex.height));
+            else
+            {
+                Texture2D tex = new Texture2D(24, 24);
+                for (int x = 0; x < 24; x++)
+                    for (int y = 0; y < 24; y++)
+                    {
+                        if (x < 2 || x > 21 || y < 2 || y > 21) tex.SetPixel(x, y, Color.black);
+                        else if ((x == 8 || x == 15) && (y == 15 || y == 16)) tex.SetPixel(x, y, Color.white);
+                        else tex.SetPixel(x, y, new Color(0, 0.7f, 1));
+                    }
+                tex.Apply();
+                sr.sprite = Sprite.Create(tex, new Rect(0, 0, 24, 24), new Vector2(0.5f, 0.5f), 24);
+            }
+
+            charGO.transform.position = new Vector3(-5.5f, 0.2f, 0);
+            charGO.AddComponent<CharacterAnchor>();
+            charGO.AddComponent<CharacterEmotion>();
+        }
 
         Camera cam = Camera.main;
         if (cam == null)

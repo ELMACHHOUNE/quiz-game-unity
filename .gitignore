@@ -16,6 +16,9 @@ obj/
 *.pidb
 *.booproj
 
+# User-specific settings
+UserSettings/
+
 # OS files
 .DS_Store
 Thumbs.db

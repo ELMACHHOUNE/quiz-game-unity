@@ -102,9 +102,9 @@ public class MenuManager : MonoBehaviour
         rt.anchorMin = new Vector2(0, 0);
         rt.anchorMax = new Vector2(0, 0);
         rt.pivot = new Vector2(0, 0);
-        rt.sizeDelta = new Vector2(120, 40);
-        rt.anchoredPosition = new Vector3(15, 15, 0);
-        GameObject txt = CreateText(AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 18, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        rt.sizeDelta = new Vector2(240, 70);
+        rt.anchoredPosition = new Vector3(25, 25, 0);
+        GameObject txt = CreateText(AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 28, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         txt.transform.SetParent(btnGO.transform, false);
         txt.GetComponent<Text>().font = font;
         txt.GetComponent<Text>().fontStyle = FontStyle.Bold;

@@ -5,26 +5,103 @@ public class CharacterEmotion : MonoBehaviour
 {
     public enum Emotion { Idle, Thinking, Happy, Angry, Celebrating }
 
-    private SpriteRenderer sr;
+    private SpriteRenderer[] srs;
     private Vector3 originalScale;
-    private Color originalColor;
+    private Color[] originalColors;
     private Emotion currentEmotion = Emotion.Idle;
     private Coroutine activeRoutine;
+
+    private Transform head;
+    private Transform leftArm;
+    private Transform rightArm;
 
     [Header("Effects")]
     public GameObject effectPrefab;
 
     void Start()
     {
-        sr = GetComponent<SpriteRenderer>();
+        srs = GetComponentsInChildren<SpriteRenderer>();
         originalScale = transform.localScale;
-        originalColor = sr.color;
+        originalColors = new Color[srs.Length];
+        for (int i = 0; i < srs.Length; i++)
+        {
+            originalColors[i] = srs[i].color;
+        }
+
+        // Find body parts by name
+        Transform[] allChildren = GetComponentsInChildren<Transform>(true);
+        foreach (Transform t in allChildren)
+        {
+            string n = t.name.ToLower();
+            if (n == "head" && head == null) head = t;
+            else if (n == "left-hand" && leftArm == null) leftArm = t;
+            else if (n == "right-hand" && rightArm == null) rightArm = t;
+        }
+
+        if (head != null) head = CreatePivot(head, -0.85f);      // Pivot near bottom of head (neck)
+        if (leftArm != null) leftArm = CreatePivot(leftArm, 0.85f);  // Pivot near top of left arm (shoulder)
+        if (rightArm != null) rightArm = CreatePivot(rightArm, 0.85f); // Pivot near top of right arm (shoulder)
+
         IdleAnimation();
+    }
+
+    Transform CreatePivot(Transform part, float yDir)
+    {
+        if (part == null || part.name.EndsWith("_Pivot")) return part;
+
+        // PSD layer groups might not have a SpriteRenderer directly, so check children
+        SpriteRenderer[] groupSrs = part.GetComponentsInChildren<SpriteRenderer>();
+        if (groupSrs.Length == 0) return part;
+
+        // Calculate the aggregate bounding box for the entire part
+        Bounds b = groupSrs[0].bounds;
+        for (int i = 1; i < groupSrs.Length; i++)
+        {
+            b.Encapsulate(groupSrs[i].bounds);
+        }
+
+        // Create a pivot object
+        GameObject pivot = new GameObject(part.name + "_Pivot");
+        pivot.transform.SetParent(part.parent, false);
+
+        // Move pivot to the target bound location (e.g. top of arm, or bottom of head)
+        // yDir = 1f means the absolute top edge. We use ~0.85f for shoulders so it's slightly inside.
+        Vector3 pivotWorldPos = b.center + new Vector3(0, b.extents.y * yDir, 0);
+        
+        pivot.transform.position = pivotWorldPos;
+        pivot.transform.localRotation = part.localRotation;
+        
+        // Parent the part to the new pivot
+        part.SetParent(pivot.transform, true);
+
+        return pivot.transform;
+    }
+
+    void SetColor(Color c)
+    {
+        foreach (var sr in srs)
+        {
+            if (sr != null) sr.color = c;
+        }
+    }
+
+    void RestoreColors()
+    {
+        for (int i = 0; i < srs.Length; i++)
+        {
+            if (srs[i] != null) srs[i].color = originalColors[i];
+        }
     }
 
     void IdleAnimation()
     {
         if (activeRoutine != null) StopCoroutine(activeRoutine);
+
+        // Reset all body parts to ensure clean state before idle animation
+        if (head != null) head.localRotation = Quaternion.identity;
+        if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+        if (rightArm != null) rightArm.localRotation = Quaternion.identity;
+
         activeRoutine = StartCoroutine(IdleLoop());
     }
 
@@ -32,8 +109,12 @@ public class CharacterEmotion : MonoBehaviour
     {
         while (true)
         {
-            float t = Mathf.Sin(Time.time * 2f) * 0.03f;
-            transform.localScale = originalScale + Vector3.one * t;
+            float t = Time.time;
+
+            if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 1.5f) * 2f);
+            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 2f) * 3f);
+            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, Mathf.Cos(t * 2f) * 3f);
+
             yield return null;
         }
     }
@@ -41,19 +122,38 @@ public class CharacterEmotion : MonoBehaviour
     public void SetThinking()
     {
         if (activeRoutine != null) StopCoroutine(activeRoutine);
+
+        // Ensure all body parts are initialized before starting thinking
+        if (head == null && leftArm == null && rightArm == null)
+        {
+            // Attempt to find them again in case they weren't found in Start
+            Transform[] allChildren = GetComponentsInChildren<Transform>(true);
+            foreach (Transform t in allChildren)
+            {
+                string n = t.name.ToLower();
+                if (n == "head" && head == null) head = t;
+                else if (n == "left-hand" && leftArm == null) leftArm = t;
+                else if (n == "right-hand" && rightArm == null) rightArm = t;
+            }
+            if (head != null) head = CreatePivot(head, -0.85f);
+            if (leftArm != null) leftArm = CreatePivot(leftArm, 0.85f);
+            if (rightArm != null) rightArm = CreatePivot(rightArm, 0.85f);
+        }
+
         activeRoutine = StartCoroutine(ThinkingAnim());
     }
 
     IEnumerator ThinkingAnim()
     {
         float timer = 0;
-        Vector3 targetScale = originalScale * 0.95f;
         while (true)
         {
             timer += Time.deltaTime;
-            float tilt = Mathf.Sin(timer * 1.5f) * 5f;
-            transform.rotation = Quaternion.Euler(0, 0, tilt);
-            transform.localScale = Vector3.Lerp(originalScale, targetScale, Mathf.PingPong(timer * 0.5f, 1));
+
+            if (head != null) head.localRotation = Quaternion.Euler(0, 0, 15f + Mathf.Sin(timer * 2f) * 3f);
+            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, -20f + Mathf.Sin(timer * 4f) * 2f);
+            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, 20f + Mathf.Cos(timer * 4f) * 2f);
+
             yield return null;
         }
     }
@@ -61,32 +161,40 @@ public class CharacterEmotion : MonoBehaviour
     public void SetHappy(System.Action onComplete = null)
     {
         if (activeRoutine != null) StopCoroutine(activeRoutine);
+
+        // Reset body parts to ensure clean animation start
+        if (head != null) head.localRotation = Quaternion.identity;
+        if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+        if (rightArm != null) rightArm.localRotation = Quaternion.identity;
+
         activeRoutine = StartCoroutine(HappyAnim(onComplete));
     }
 
     IEnumerator HappyAnim(System.Action onComplete)
     {
-        sr.color = new Color(0.5f, 1f, 0.5f);
+        SetColor(new Color(0.5f, 1f, 0.5f));
         for (int i = 0; i < 3; i++)
         {
-            float jumpH = 0.3f;
-            Vector3 basePos = transform.position;
             float t = 0;
             while (t < 1)
             {
                 t += Time.deltaTime * 6f;
-                float y = Mathf.Sin(t * Mathf.PI) * jumpH;
-                transform.position = basePos + new Vector3(0, y, 0);
-                transform.localScale = originalScale + Vector3.one * Mathf.Lerp(0, 0.1f, Mathf.PingPong(t * 2, 1));
+
+                if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, 100f * Mathf.Sin(t * Mathf.PI));
+                if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, -100f * Mathf.Sin(t * Mathf.PI));
+                if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 2) * 10f);
+
                 yield return null;
             }
-            transform.position = basePos;
+            if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+            if (rightArm != null) rightArm.localRotation = Quaternion.identity;
+            if (head != null) head.localRotation = Quaternion.identity;
+
             SpawnParticle(Color.green);
+            yield return new WaitForSeconds(0.1f);
         }
-        transform.rotation = Quaternion.identity;
-        transform.localScale = originalScale;
         yield return new WaitForSeconds(0.3f);
-        sr.color = originalColor;
+        RestoreColors();
         IdleAnimation();
         onComplete?.Invoke();
     }
@@ -94,36 +202,45 @@ public class CharacterEmotion : MonoBehaviour
     public void SetAngry(System.Action onComplete = null)
     {
         if (activeRoutine != null) StopCoroutine(activeRoutine);
+
+        // Reset body parts to ensure clean animation start
+        if (head != null) head.localRotation = Quaternion.identity;
+        if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+        if (rightArm != null) rightArm.localRotation = Quaternion.identity;
+
         activeRoutine = StartCoroutine(AngryAnim(onComplete));
     }
 
     IEnumerator AngryAnim(System.Action onComplete)
     {
-        sr.color = new Color(1f, 0.3f, 0.3f);
-        Vector3 basePos = transform.position;
+        SetColor(new Color(1f, 0.3f, 0.3f));
 
         for (int i = 0; i < 4; i++)
         {
-            float shakeX = Random.Range(-0.15f, 0.15f);
-            float shakeY = Random.Range(-0.1f, 0.1f);
-            transform.position = basePos + new Vector3(shakeX, shakeY, 0);
-            transform.localScale = originalScale + Vector3.one * 0.05f;
+            if (head != null) head.localRotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
+            if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, Random.Range(35f, 55f));
+            if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, Random.Range(-35f, -55f));
+
             SpawnParticle(Color.red);
             yield return new WaitForSeconds(0.06f);
         }
-        transform.position = basePos;
+
+        if (head != null) head.localRotation = Quaternion.identity;
+        if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+        if (rightArm != null) rightArm.localRotation = Quaternion.identity;
 
         float flashTimer = 0;
         while (flashTimer < 0.8f)
         {
-            sr.color = flashTimer % 0.15f < 0.075f ? new Color(1f, 0.3f, 0.3f) : originalColor;
+            if (flashTimer % 0.15f < 0.075f) SetColor(new Color(1f, 0.3f, 0.3f));
+            else RestoreColors();
             flashTimer += Time.deltaTime;
             yield return null;
         }
 
         transform.rotation = Quaternion.identity;
         transform.localScale = originalScale;
-        sr.color = originalColor;
+        RestoreColors();
         IdleAnimation();
         onComplete?.Invoke();
     }
@@ -131,6 +248,12 @@ public class CharacterEmotion : MonoBehaviour
     public void SetCelebrating(System.Action onComplete = null)
     {
         if (activeRoutine != null) StopCoroutine(activeRoutine);
+
+        // Reset body parts to ensure clean animation start
+        if (head != null) head.localRotation = Quaternion.identity;
+        if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+        if (rightArm != null) rightArm.localRotation = Quaternion.identity;
+
         activeRoutine = StartCoroutine(CelebrateAnim(onComplete));
     }
 
@@ -138,24 +261,22 @@ public class CharacterEmotion : MonoBehaviour
     {
         for (int i = 0; i < 5; i++)
         {
-            float rotation = 360f * (i + 1) / 5f;
             float duration = 0.3f;
             float t = 0;
-            Quaternion startRot = transform.rotation;
-            Vector3 basePos = transform.position;
             while (t < 1)
             {
                 t += Time.deltaTime / duration;
-                transform.rotation = Quaternion.Euler(0, 0, Mathf.Lerp(0, rotation, t));
-                transform.position = basePos + new Vector3(0, Mathf.Sin(t * Mathf.PI) * 0.4f, 0);
-                transform.localScale = originalScale + Vector3.one * Mathf.Lerp(0, 0.15f, Mathf.PingPong(t * 2, 1));
+
+                if (head != null) head.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI * 4f) * 15f);
+                if (leftArm != null) leftArm.localRotation = Quaternion.Euler(0, 0, 150f * Mathf.Sin(t * Mathf.PI));
+                if (rightArm != null) rightArm.localRotation = Quaternion.Euler(0, 0, -150f * Mathf.Sin(t * Mathf.PI));
+
                 yield return null;
             }
-            SpawnParticle(Color.yellow);
-            SpawnParticle(new Color(1, 0.5f, 0));
+            if (head != null) head.localRotation = Quaternion.identity;
+            if (leftArm != null) leftArm.localRotation = Quaternion.identity;
+            if (rightArm != null) rightArm.localRotation = Quaternion.identity;
         }
-        transform.rotation = Quaternion.identity;
-        transform.localScale = originalScale;
         yield return new WaitForSeconds(0.5f);
         IdleAnimation();
         onComplete?.Invoke();
