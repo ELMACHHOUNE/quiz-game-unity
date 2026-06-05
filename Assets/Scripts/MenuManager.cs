@@ -123,8 +123,7 @@ public class MenuManager : MonoBehaviour
         shadow.effectDistance = new Vector2(2, -2);
 
         CreateMenuButton(currentPanel.transform, "\u25B6 SELECT CATEGORY", new Vector3(0, 30, 0), () => ShowCategories());
-        CreateMenuButton(currentPanel.transform, "\u2699 SETTINGS", new Vector3(0, -70, 0), () => ShowSettings());
-        CreateMenuButton(currentPanel.transform, "\u2715 EXIT GAME", new Vector3(0, -170, 0), () => Application.Quit());
+        CreateMenuButton(currentPanel.transform, "\u2715 EXIT GAME", new Vector3(0, -70, 0), () => Application.Quit());
     }
 
     void ShowCategories()
@@ -145,7 +144,8 @@ public class MenuManager : MonoBehaviour
         foreach (var cat in QuestionGenerator.categories)
         {
             string catName = cat.categoryName;
-            CreateMenuButton(currentPanel.transform, catName, new Vector3(0, startY, 0), () => ShowQuizzes(cat));
+            string icon = GetCategoryIcon(catName);
+            CreateMenuButton(currentPanel.transform, icon + "  " + catName, new Vector3(0, startY, 0), () => ShowQuizzes(cat));
             startY -= 100;
         }
 
@@ -303,9 +303,15 @@ public class MenuManager : MonoBehaviour
         gameRoot = go;
     }
 
-    void ShowSettings()
+    string GetCategoryIcon(string catName)
     {
-        Debug.Log("Settings - placeholder");
+        switch (catName)
+        {
+            case "Code": return "\uD83D\uDCBB";
+            case "Design": return "\uD83C\uDFA8";
+            case "Mathematics": return "\uD83D\uDD22";
+            default: return "\uD83D\uDCCA";
+        }
     }
 
     public void ReturnToMenu()

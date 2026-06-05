@@ -282,8 +282,7 @@ public class GameUI : MonoBehaviour
             Time.timeScale = 1f;
             if (QuizGameManager.Instance != null) QuizGameManager.Instance.RestartGame();
         });
-        addPauseBtn("\u2699  SETTINGS", new Vector3(0, -90, 0), () => { });
-        addPauseBtn("\u2715  EXIT GAME", new Vector3(0, -170, 0), () =>
+        addPauseBtn("\u2715  EXIT GAME", new Vector3(0, -90, 0), () =>
         {
             pausePanel.SetActive(false);
             Time.timeScale = 1f;
@@ -368,55 +367,8 @@ public class GameUI : MonoBehaviour
 
         gameObject.AddComponent<QuestionGenerator>();
 
-        GameObject prefab = Resources.Load<GameObject>("CharacterPS-01");
-        if (prefab != null)
-        {
-            GameObject charInst = Instantiate(prefab);
-            charInst.name = "Character";
-            // Parent to the GameUI root (NOT the Canvas) so it gets destroyed on exit
-            charInst.transform.SetParent(transform);
-            
-            charInst.transform.localScale = new Vector3(0.18f, 0.18f, 1);
-            charInst.transform.position = new Vector3(-5.5f, 0.2f, 0);
-            
-            // Add a SortingGroup so the character renders as a cohesive unit above the background
-            UnityEngine.Rendering.SortingGroup sg = charInst.AddComponent<UnityEngine.Rendering.SortingGroup>();
-            sg.sortingOrder = 5;
-
-            charInst.AddComponent<CharacterAnchor>();
-            charInst.AddComponent<CharacterEmotion>();
-        }
-        else
-        {
-            GameObject charGO = new GameObject("Character");
-            // Parent to the GameUI root
-            charGO.transform.SetParent(transform);
-            charGO.transform.localScale = new Vector3(3.5f, 3.5f, 1);
-            SpriteRenderer sr = charGO.AddComponent<SpriteRenderer>();
-            sr.sortingOrder = 5;
-
-            Texture2D charTex = Resources.Load<Texture2D>("ELMACHHOUNE");
-            if (charTex == null) charTex = Resources.Load<Texture2D>("character");
-            if (charTex != null)
-                sr.sprite = Sprite.Create(charTex, new Rect(0, 0, charTex.width, charTex.height), new Vector2(0.5f, 0.5f), Mathf.Max(charTex.width, charTex.height));
-            else
-            {
-                Texture2D tex = new Texture2D(24, 24);
-                for (int x = 0; x < 24; x++)
-                    for (int y = 0; y < 24; y++)
-                    {
-                        if (x < 2 || x > 21 || y < 2 || y > 21) tex.SetPixel(x, y, Color.black);
-                        else if ((x == 8 || x == 15) && (y == 15 || y == 16)) tex.SetPixel(x, y, Color.white);
-                        else tex.SetPixel(x, y, new Color(0, 0.7f, 1));
-                    }
-                tex.Apply();
-                sr.sprite = Sprite.Create(tex, new Rect(0, 0, 24, 24), new Vector2(0.5f, 0.5f), 24);
-            }
-
-            charGO.transform.position = new Vector3(-5.5f, 0.2f, 0);
-            charGO.AddComponent<CharacterAnchor>();
-            charGO.AddComponent<CharacterEmotion>();
-        }
+        SetupCharacter("CharacterPS-01", -5.5f, 0.15f);
+        SetupCharacter("character2", 5.5f, 0.85f);
 
         Camera cam = Camera.main;
         if (cam == null)
@@ -478,6 +430,63 @@ public class GameUI : MonoBehaviour
         rt.anchoredPosition = pos;
         rt.sizeDelta = size;
         return go;
+    }
+
+    void SetupCharacter(string resourceName, float xPos, float viewportX)
+    {
+        GameObject prefab = Resources.Load<GameObject>(resourceName);
+        if (prefab != null)
+        {
+            GameObject charInst = Instantiate(prefab);
+            charInst.name = resourceName == "CharacterPS-01" ? "Character" : "Character2";
+            charInst.transform.SetParent(transform);
+
+            float scaleX = resourceName == "CharacterPS-01" ? 0.18f : -0.18f;
+            charInst.transform.localScale = new Vector3(scaleX, 0.18f, 1);
+            charInst.transform.position = new Vector3(xPos, 0.2f, 0);
+
+            UnityEngine.Rendering.SortingGroup sg = charInst.AddComponent<UnityEngine.Rendering.SortingGroup>();
+            sg.sortingOrder = 5;
+
+            CharacterAnchor anchor = charInst.AddComponent<CharacterAnchor>();
+            anchor.SetViewportPosition(viewportX, 0.2f);
+            CharacterEmotion ce = charInst.AddComponent<CharacterEmotion>();
+            if (resourceName == "character2") ce.handAmplitude = 0.4f;
+        }
+        else
+        {
+            GameObject charGO = new GameObject(resourceName == "CharacterPS-01" ? "Character" : "Character2");
+            charGO.transform.SetParent(transform);
+
+            float scaleX = resourceName == "CharacterPS-01" ? 3.5f : -3.5f;
+            charGO.transform.localScale = new Vector3(scaleX, 3.5f, 1);
+            SpriteRenderer sr = charGO.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 5;
+
+            Texture2D charTex = Resources.Load<Texture2D>(resourceName);
+            if (charTex == null) charTex = Resources.Load<Texture2D>("character");
+            if (charTex != null)
+                sr.sprite = Sprite.Create(charTex, new Rect(0, 0, charTex.width, charTex.height), new Vector2(0.5f, 0.5f), Mathf.Max(charTex.width, charTex.height));
+            else
+            {
+                Texture2D tex = new Texture2D(24, 24);
+                for (int x = 0; x < 24; x++)
+                    for (int y = 0; y < 24; y++)
+                    {
+                        if (x < 2 || x > 21 || y < 2 || y > 21) tex.SetPixel(x, y, Color.black);
+                        else if ((x == 8 || x == 15) && (y == 15 || y == 16)) tex.SetPixel(x, y, Color.white);
+                        else tex.SetPixel(x, y, new Color(0, 0.7f, 1));
+                    }
+                tex.Apply();
+                sr.sprite = Sprite.Create(tex, new Rect(0, 0, 24, 24), new Vector2(0.5f, 0.5f), 24);
+            }
+
+            charGO.transform.position = new Vector3(xPos, 0.2f, 0);
+            CharacterAnchor anchor = charGO.AddComponent<CharacterAnchor>();
+            anchor.SetViewportPosition(viewportX, 0.2f);
+            CharacterEmotion ce = charGO.AddComponent<CharacterEmotion>();
+            if (resourceName == "character2") ce.handAmplitude = 0.4f;
+        }
     }
 
     Sprite MakeRoundedRectSprite(int w, int h)

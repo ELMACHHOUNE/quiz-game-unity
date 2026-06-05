@@ -97,6 +97,24 @@ public class QuestionGenerator : MonoBehaviour
         designCat.quizzes.Add(designQuiz);
 
         categories.Add(designCat);
+
+        // ---- MATHEMATICS CATEGORY ----
+        QuizCategory mathCat = new QuizCategory { categoryName = "Mathematics", quizzes = new List<QuizData>() };
+
+        QuizData mathQuiz = new QuizData { quizName = "Math Fundamentals", questions = new List<QuizQuestion>() };
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is 5 + 7?", answers = new string[] { "11", "12", "13", "14" }, correctIndex = 1, difficulty = 1 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is 15 - 8?", answers = new string[] { "5", "6", "7", "8" }, correctIndex = 2, difficulty = 1 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is 6 x 7?", answers = new string[] { "36", "42", "48", "54" }, correctIndex = 1, difficulty = 1 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is 81 \u00F7 9?", answers = new string[] { "7", "8", "9", "10" }, correctIndex = 2, difficulty = 1 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is the square root of 64?", answers = new string[] { "6", "7", "8", "9" }, correctIndex = 2, difficulty = 2 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is 25% of 200?", answers = new string[] { "25", "50", "75", "100" }, correctIndex = 1, difficulty = 2 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is 2 to the power of 5?", answers = new string[] { "16", "32", "64", "128" }, correctIndex = 1, difficulty = 2 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is the area of a rectangle with length 8 and width 5?", answers = new string[] { "30", "35", "40", "45" }, correctIndex = 2, difficulty = 2 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "What is the perimeter of a square with side 6?", answers = new string[] { "20", "24", "28", "36" }, correctIndex = 1, difficulty = 2 });
+        mathQuiz.questions.Add(new QuizQuestion { question = "If x + 3 = 10, what is x?", answers = new string[] { "5", "6", "7", "8" }, correctIndex = 2, difficulty = 2 });
+        mathCat.quizzes.Add(mathQuiz);
+
+        categories.Add(mathCat);
     }
 
     public void SetupQuiz()

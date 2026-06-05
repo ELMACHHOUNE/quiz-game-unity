@@ -6,9 +6,12 @@ public class PSDSetup
 {
     public static void Run()
     {
-        string path = "Assets/Resources/CharacterPS-01.psb";
-        
-        // Force reimport so PSDImporter takes over from TextureImporter
+        ConfigurePSB("Assets/Resources/CharacterPS-01.psb", "CharacterPS-01");
+        ConfigurePSB("Assets/Resources/character2.psb", "character2");
+    }
+
+    static void ConfigurePSB(string path, string label)
+    {
         AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
 
         var importer = AssetImporter.GetAtPath(path) as PSDImporter;
@@ -16,13 +19,13 @@ public class PSDSetup
         {
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Multiple;
-            
+
             importer.SaveAndReimport();
-            Debug.Log("PSD Importer successfully configured for CharacterPS-01.psd!");
+            Debug.Log($"PSD Importer successfully configured for {label}!");
         }
         else
         {
-            Debug.LogError("Still failed to get PSDImporter for " + path + ". Got type: " + AssetImporter.GetAtPath(path).GetType().Name);
+            Debug.LogError($"Still failed to get PSDImporter for {path}. Got type: " + AssetImporter.GetAtPath(path).GetType().Name);
         }
     }
 }

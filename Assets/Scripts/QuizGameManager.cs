@@ -25,7 +25,7 @@ public class QuizGameManager : MonoBehaviour
     public int questionsPerRound = 10;
 
     private QuestionGenerator qGen;
-    private CharacterEmotion character;
+    private CharacterEmotion[] characters;
     private InteractiveBackground bg;
     private QuizQuestion currentQuestion;
     private float timeRemaining;
@@ -60,9 +60,7 @@ public class QuizGameManager : MonoBehaviour
 
     void DelayedStart()
     {
-        character = GetComponent<CharacterEmotion>();
-        if (character == null)
-            character = FindObjectOfType<CharacterEmotion>();
+        characters = GetComponentsInChildren<CharacterEmotion>();
 
         bg = FindObjectOfType<InteractiveBackground>();
 
@@ -118,8 +116,7 @@ public class QuizGameManager : MonoBehaviour
         if (questionCounterText != null)
             questionCounterText.text = $"{questionCount}/{questionsPerRound}";
 
-        if (character != null)
-            character.SetThinking();
+        SetCharacterEmotion(CharacterEmotion.Emotion.Thinking);
     }
 
     private Color[] btnOriginalColors;
@@ -147,8 +144,7 @@ public class QuizGameManager : MonoBehaviour
             score += points;
             correctCount++;
 
-            if (character != null)
-                character.SetHappy(() => NextQuestion());
+            SetCharacterEmotion(CharacterEmotion.Emotion.Happy, () => NextQuestion());
             if (bg != null)
             {
                 bg.Flash(new Color(0.2f, 0.8f, 0.3f), 0.4f);
@@ -160,8 +156,7 @@ public class QuizGameManager : MonoBehaviour
         else
         {
             combo = 0;
-            if (character != null)
-                character.SetAngry(() => NextQuestion());
+            SetCharacterEmotion(CharacterEmotion.Emotion.Angry, () => NextQuestion());
             if (bg != null)
             {
                 bg.Flash(new Color(0.8f, 0.2f, 0.2f), 0.4f);
@@ -200,8 +195,7 @@ public class QuizGameManager : MonoBehaviour
 
         StartCoroutine(DelayedHighlight(currentQuestion.correctIndex, new Color(0.3f, 1f, 0.3f)));
 
-        if (character != null)
-            character.SetAngry(() => NextQuestion());
+        SetCharacterEmotion(CharacterEmotion.Emotion.Angry, () => NextQuestion());
         if (bg != null)
         {
             bg.Flash(new Color(0.8f, 0.2f, 0.2f), 0.4f);
@@ -255,8 +249,7 @@ public class QuizGameManager : MonoBehaviour
         if (finalCorrectText != null)
             finalCorrectText.text = $"{correctCount}/{questionCount} correct  ({accuracy:F0}%)";
 
-        if (character != null)
-            character.SetCelebrating();
+        SetCharacterEmotion(CharacterEmotion.Emotion.Celebrating);
         if (bg != null)
             bg.Flash(new Color(1f, 0.8f, 0.2f), 1f);
     }
@@ -272,6 +265,37 @@ public class QuizGameManager : MonoBehaviour
         correctCount = 0;
         UpdateScoreUI();
         NextQuestion();
+    }
+
+    void SetCharacterEmotion(CharacterEmotion.Emotion emotion, System.Action onComplete = null)
+    {
+        if (characters == null || characters.Length == 0) return;
+
+        int remaining = characters.Length;
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null)
+            {
+                remaining--;
+                continue;
+            }
+
+            switch (emotion)
+            {
+                case CharacterEmotion.Emotion.Thinking:
+                    characters[i].SetThinking();
+                    break;
+                case CharacterEmotion.Emotion.Happy:
+                    characters[i].SetHappy(i == characters.Length - 1 ? onComplete : null);
+                    break;
+                case CharacterEmotion.Emotion.Angry:
+                    characters[i].SetAngry(i == characters.Length - 1 ? onComplete : null);
+                    break;
+                case CharacterEmotion.Emotion.Celebrating:
+                    characters[i].SetCelebrating(i == characters.Length - 1 ? onComplete : null);
+                    break;
+            }
+        }
     }
 
     public void OnCorrectAnswer()

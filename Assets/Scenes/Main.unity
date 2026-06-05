@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1947785442
+--- !u!1 &1489998460
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,10 +127,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1947785446}
-  - component: {fileID: 1947785445}
-  - component: {fileID: 1947785444}
-  - component: {fileID: 1947785443}
+  - component: {fileID: 1489998464}
+  - component: {fileID: 1489998463}
+  - component: {fileID: 1489998462}
+  - component: {fileID: 1489998461}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -138,33 +138,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1947785443
+--- !u!114 &1489998461
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1947785442}
+  m_GameObject: {fileID: 1489998460}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 082d1ce4326c4634d82ec48cfaa94561, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MenuManager
---- !u!81 &1947785444
+--- !u!81 &1489998462
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1947785442}
+  m_GameObject: {fileID: 1489998460}
   m_Enabled: 1
---- !u!20 &1947785445
+--- !u!20 &1489998463
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1947785442}
+  m_GameObject: {fileID: 1489998460}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -209,13 +209,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1947785446
+--- !u!4 &1489998464
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1947785442}
+  m_GameObject: {fileID: 1489998460}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
@@ -228,4 +228,4 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1947785446}
+  - {fileID: 1489998464}
