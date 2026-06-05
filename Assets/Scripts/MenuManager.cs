@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class MenuManager : MonoBehaviour
 {
@@ -9,6 +10,15 @@ public class MenuManager : MonoBehaviour
     private Canvas menuCanvas;
     private GameObject gameRoot;
     private Font font;
+    private GameObject currentPanel;
+    
+    // Modern UI Colors
+    private Color bgDark = new Color(0.06f, 0.09f, 0.16f); // #0F172A
+    private Color btnNormal = new Color(0.12f, 0.16f, 0.23f); // #1E293B
+    private Color btnHighlight = new Color(0.23f, 0.51f, 0.96f); // #3B82F6
+    private Color btnPressed = new Color(0.15f, 0.39f, 0.92f); // #2563EB
+    private Color textLight = new Color(0.97f, 0.98f, 0.99f); // #F8FAFC
+    private Color textAccent = new Color(0.22f, 0.74f, 0.97f); // #38BDF8
 
     void Awake()
     {
@@ -23,6 +33,11 @@ public class MenuManager : MonoBehaviour
             font = Resources.GetBuiltinResource<Font>("Arial");
             if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         }
+
+        // Initialize question categories
+        QuestionGenerator tempGen = gameObject.AddComponent<QuestionGenerator>();
+        tempGen.InitializeData();
+        Destroy(tempGen);
 
         CreateEventSystem();
         SetupAudio();
@@ -66,22 +81,100 @@ public class MenuManager : MonoBehaviour
         GameObject bgGO = new GameObject("MenuBg");
         bgGO.transform.SetParent(canvas.transform, false);
         Image bgImg = bgGO.AddComponent<Image>();
-        bgImg.color = new Color(0.06f, 0.07f, 0.12f);
+        bgImg.color = bgDark; // Modern Background
         RectTransform brt = bgGO.GetComponent<RectTransform>();
         brt.anchorMin = Vector2.zero;
         brt.anchorMax = Vector2.one;
         brt.sizeDelta = Vector2.zero;
 
-        GameObject title = CreateText("MATH QUIZ", 72, new Color(1, 0.8f, 0.2f), TextAnchor.MiddleCenter,
+        CreateSoundButton(canvas);
+
+        ShowMainMenu();
+    }
+
+    void ClearCurrentPanel()
+    {
+        if (currentPanel != null)
+        {
+            Destroy(currentPanel);
+        }
+        currentPanel = new GameObject("Panel");
+        currentPanel.transform.SetParent(menuCanvas.transform, false);
+        RectTransform rt = currentPanel.AddComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
+    }
+
+    void ShowMainMenu()
+    {
+        ClearCurrentPanel();
+
+        GameObject title = CreateText("QUIZ LOBBY", 72, textAccent, TextAnchor.MiddleCenter,
             new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector3(0, 180, 0), new Vector2(700, 90));
-        title.transform.SetParent(canvas.transform, false);
+        title.transform.SetParent(currentPanel.transform, false);
         title.GetComponent<Text>().font = font;
         title.GetComponent<Text>().fontStyle = FontStyle.Bold;
+        
+        // Add subtle shadow to title
+        Shadow shadow = title.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.5f);
+        shadow.effectDistance = new Vector2(2, -2);
 
-        CreateMenuButton(canvas, "\u25B6 PLAY GAME", new Vector3(0, 30, 0), () => PlayGame());
-        CreateMenuButton(canvas, "\u2699 SETTINGS", new Vector3(0, -70, 0), () => ShowSettings());
-        CreateMenuButton(canvas, "\u2715 EXIT GAME", new Vector3(0, -170, 0), () => Application.Quit());
-        CreateSoundButton(canvas);
+        CreateMenuButton(currentPanel.transform, "\u25B6 SELECT CATEGORY", new Vector3(0, 30, 0), () => ShowCategories());
+        CreateMenuButton(currentPanel.transform, "\u2699 SETTINGS", new Vector3(0, -70, 0), () => ShowSettings());
+        CreateMenuButton(currentPanel.transform, "\u2715 EXIT GAME", new Vector3(0, -170, 0), () => Application.Quit());
+    }
+
+    void ShowCategories()
+    {
+        ClearCurrentPanel();
+
+        GameObject title = CreateText("CATEGORIES", 60, textAccent, TextAnchor.MiddleCenter,
+            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector3(0, 250, 0), new Vector2(700, 90));
+        title.transform.SetParent(currentPanel.transform, false);
+        title.GetComponent<Text>().font = font;
+        title.GetComponent<Text>().fontStyle = FontStyle.Bold;
+        
+        Shadow shadow = title.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.5f);
+        shadow.effectDistance = new Vector2(2, -2);
+
+        float startY = 100;
+        foreach (var cat in QuestionGenerator.categories)
+        {
+            string catName = cat.categoryName;
+            CreateMenuButton(currentPanel.transform, catName, new Vector3(0, startY, 0), () => ShowQuizzes(cat));
+            startY -= 100;
+        }
+
+        CreateMenuButton(currentPanel.transform, "\u2190 BACK", new Vector3(0, startY - 50, 0), () => ShowMainMenu());
+    }
+
+    void ShowQuizzes(QuizCategory category)
+    {
+        ClearCurrentPanel();
+
+        GameObject title = CreateText(category.categoryName.ToUpper() + " QUIZZES", 60, textAccent, TextAnchor.MiddleCenter,
+            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector3(0, 250, 0), new Vector2(800, 90));
+        title.transform.SetParent(currentPanel.transform, false);
+        title.GetComponent<Text>().font = font;
+        title.GetComponent<Text>().fontStyle = FontStyle.Bold;
+        
+        Shadow shadow = title.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.5f);
+        shadow.effectDistance = new Vector2(2, -2);
+
+        float startY = 100;
+        foreach (var quiz in category.quizzes)
+        {
+            string qName = quiz.quizName;
+            CreateMenuButton(currentPanel.transform, qName, new Vector3(0, startY, 0), () => PlayGame(qName));
+            startY -= 100;
+        }
+
+        CreateMenuButton(currentPanel.transform, "\u2190 BACK", new Vector3(0, startY - 50, 0), () => ShowCategories());
     }
 
     void CreateSoundButton(Canvas canvas)
@@ -93,18 +186,21 @@ public class MenuManager : MonoBehaviour
         img.type = Image.Type.Sliced;
         Button btn = btnGO.AddComponent<Button>();
         ColorBlock colors = btn.colors;
-        colors.normalColor = new Color(0.15f, 0.18f, 0.25f);
-        colors.highlightedColor = new Color(0.35f, 0.4f, 0.55f);
-        colors.pressedColor = new Color(0.55f, 0.6f, 0.8f);
-        colors.fadeDuration = 0.1f;
+        colors.normalColor = btnNormal;
+        colors.highlightedColor = btnHighlight;
+        colors.pressedColor = btnPressed;
+        colors.fadeDuration = 0.15f;
         btn.colors = colors;
+        
+        btnGO.AddComponent<ButtonHoverAnimator>();
+        
         RectTransform rt = btnGO.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0, 0);
         rt.anchorMax = new Vector2(0, 0);
         rt.pivot = new Vector2(0, 0);
         rt.sizeDelta = new Vector2(240, 70);
         rt.anchoredPosition = new Vector3(25, 25, 0);
-        GameObject txt = CreateText(AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 28, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        GameObject txt = CreateText(AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 28, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         txt.transform.SetParent(btnGO.transform, false);
         txt.GetComponent<Text>().font = font;
         txt.GetComponent<Text>().fontStyle = FontStyle.Bold;
@@ -135,23 +231,34 @@ public class MenuManager : MonoBehaviour
 
     Sprite MakeRoundedSprite()
     {
-        Texture2D tex = new Texture2D(16, 16, TextureFormat.RGBA32, false);
-        for (int x = 0; x < 16; x++)
-            for (int y = 0; y < 16; y++)
+        int size = 64;
+        int radius = 16;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        for (int x = 0; x < size; x++)
+        {
+            for (int y = 0; y < size; y++)
             {
-                float dx = Mathf.Min(x, 15 - x);
-                float dy = Mathf.Min(y, 15 - y);
-                float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                tex.SetPixel(x, y, dist < 3 ? Color.clear : Color.white);
+                float dx = Mathf.Min(x, size - 1 - x);
+                float dy = Mathf.Min(y, size - 1 - y);
+                if (dx < radius && dy < radius)
+                {
+                    float dist = Mathf.Sqrt((radius - dx) * (radius - dx) + (radius - dy) * (radius - dy));
+                    tex.SetPixel(x, y, dist > radius ? Color.clear : Color.white);
+                }
+                else
+                {
+                    tex.SetPixel(x, y, Color.white);
+                }
             }
+        }
         tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, 16, 16), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(3, 3, 3, 3));
+        return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
     }
 
-    void CreateMenuButton(Canvas canvas, string text, Vector3 position, UnityEngine.Events.UnityAction onClick)
+    void CreateMenuButton(Transform parent, string text, Vector3 position, UnityEngine.Events.UnityAction onClick)
     {
         GameObject btnGO = new GameObject("Btn_" + text.Replace(" ", ""));
-        btnGO.transform.SetParent(canvas.transform, false);
+        btnGO.transform.SetParent(parent, false);
 
         Image img = btnGO.AddComponent<Image>();
         img.sprite = MakeRoundedSprite();
@@ -159,20 +266,27 @@ public class MenuManager : MonoBehaviour
 
         Button btn = btnGO.AddComponent<Button>();
         ColorBlock colors = btn.colors;
-        colors.normalColor = new Color(0.15f, 0.18f, 0.25f);
-        colors.highlightedColor = new Color(0.35f, 0.4f, 0.55f);
-        colors.pressedColor = new Color(0.55f, 0.6f, 0.8f);
-        colors.fadeDuration = 0.1f;
+        colors.normalColor = btnNormal;
+        colors.highlightedColor = btnHighlight;
+        colors.pressedColor = btnPressed;
+        colors.fadeDuration = 0.15f;
         btn.colors = colors;
+        
+        btnGO.AddComponent<ButtonHoverAnimator>();
+        
+        // Add subtle shadow to button
+        Shadow shadow = btnGO.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0, 0, 0, 0.3f);
+        shadow.effectDistance = new Vector2(0, -3);
 
         RectTransform rt = btnGO.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(260, 65);
+        rt.sizeDelta = new Vector2(400, 75); // Made wider and taller for a modern look
         rt.anchoredPosition = position;
 
-        GameObject btnText = CreateText(text, 28, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        GameObject btnText = CreateText(text, 28, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         btnText.transform.SetParent(btnGO.transform, false);
         btnText.GetComponent<Text>().font = font;
         btnText.GetComponent<Text>().fontStyle = FontStyle.Bold;
@@ -180,8 +294,9 @@ public class MenuManager : MonoBehaviour
         btn.onClick.AddListener(onClick);
     }
 
-    void PlayGame()
+    void PlayGame(string quizName)
     {
+        QuestionGenerator.selectedQuizName = quizName;
         menuCanvas.gameObject.SetActive(false);
         GameObject go = new GameObject("GameUI");
         go.AddComponent<GameUI>();
@@ -201,5 +316,29 @@ public class MenuManager : MonoBehaviour
             gameRoot = null;
         }
         menuCanvas.gameObject.SetActive(true);
+        ShowMainMenu();
     }
+}
+
+public class ButtonHoverAnimator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+{
+    private Vector3 originalScale;
+    private float targetScale = 1f;
+    private float smoothTime = 0.1f;
+    private Vector3 velocity = Vector3.zero;
+
+    void Start()
+    {
+        originalScale = transform.localScale;
+    }
+
+    void Update()
+    {
+        transform.localScale = Vector3.SmoothDamp(transform.localScale, originalScale * targetScale, ref velocity, smoothTime);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData) { targetScale = 1.03f; }
+    public void OnPointerExit(PointerEventData eventData) { targetScale = 1f; }
+    public void OnPointerDown(PointerEventData eventData) { targetScale = 0.95f; }
+    public void OnPointerUp(PointerEventData eventData) { targetScale = 1.03f; }
 }

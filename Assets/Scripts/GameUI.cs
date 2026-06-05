@@ -4,6 +4,15 @@ using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour
 {
+    // Modern UI Colors
+    private Color bgDark = new Color(0.06f, 0.09f, 0.16f);
+    private Color btnNormal = new Color(0.12f, 0.16f, 0.23f);
+    private Color btnHighlight = new Color(0.23f, 0.51f, 0.96f);
+    private Color btnPressed = new Color(0.15f, 0.39f, 0.92f);
+    private Color textLight = new Color(0.97f, 0.98f, 0.99f);
+    private Color accentBlue = new Color(0.22f, 0.74f, 0.97f);
+    private Color accentYellow = new Color(0.98f, 0.75f, 0.14f);
+
     void Start()
     {
         Canvas canvas = GetComponent<Canvas>();
@@ -106,9 +115,16 @@ public class GameUI : MonoBehaviour
         timerText.GetComponent<Text>().font = font;
         timerText.GetComponent<Text>().fontStyle = FontStyle.Bold;
 
-        GameObject questionGO = CreateText(canvas, "Question", 44, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector3(0, 310, 0), new Vector2(700, 70));
+        GameObject questionGO = CreateText(canvas, "Question", 44, textLight, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector3(0, 310, 0), new Vector2(900, 120));
         questionGO.GetComponent<Text>().font = font;
         questionGO.GetComponent<Text>().fontStyle = FontStyle.Bold;
+        questionGO.GetComponent<Text>().resizeTextForBestFit = true;
+        questionGO.GetComponent<Text>().resizeTextMinSize = 20;
+        questionGO.GetComponent<Text>().resizeTextMaxSize = 44;
+        
+        Shadow qShadow = questionGO.AddComponent<Shadow>();
+        qShadow.effectColor = new Color(0, 0, 0, 0.5f);
+        qShadow.effectDistance = new Vector2(2, -2);
 
         GameObject[] btnGOs = new GameObject[4];
         Button[] buttons = new Button[4];
@@ -122,28 +138,36 @@ public class GameUI : MonoBehaviour
             btnGOs[i].transform.SetParent(canvas.transform, false);
 
             Image img = btnGOs[i].AddComponent<Image>();
-            img.sprite = MakeRoundedRectSprite(16, 16);
+            img.sprite = MakeRoundedRectSprite(64, 64);
             img.type = Image.Type.Sliced;
 
             Button btn = btnGOs[i].AddComponent<Button>();
             ColorBlock colors = btn.colors;
-            colors.normalColor = new Color(0.15f, 0.18f, 0.25f);
-            colors.highlightedColor = new Color(0.35f, 0.4f, 0.55f);
-            colors.pressedColor = new Color(0.55f, 0.6f, 0.8f);
+            colors.normalColor = btnNormal;
+            colors.highlightedColor = btnHighlight;
+            colors.pressedColor = btnPressed;
             colors.selectedColor = new Color(0.2f, 0.24f, 0.32f);
-            colors.fadeDuration = 0.1f;
+            colors.fadeDuration = 0.15f;
             btn.colors = colors;
+            
+            btnGOs[i].AddComponent<ButtonHoverAnimator>();
+            Shadow btnShadow = btnGOs[i].AddComponent<Shadow>();
+            btnShadow.effectColor = new Color(0, 0, 0, 0.3f);
+            btnShadow.effectDistance = new Vector2(0, -3);
 
             RectTransform brt = btnGOs[i].GetComponent<RectTransform>();
             brt.anchorMin = new Vector2(0.5f, 0.5f);
             brt.anchorMax = new Vector2(0.5f, 0.5f);
             brt.pivot = new Vector2(0.5f, 0.5f);
-            brt.sizeDelta = new Vector2(320, 70);
+            brt.sizeDelta = new Vector2(750, 75);
             brt.anchoredPosition = new Vector3(0, btnY[i], 0);
 
-            GameObject answerText = CreateTextInParent(btnGOs[i], "", 32, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            GameObject answerText = CreateTextInParent(btnGOs[i], "", 24, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             answerText.GetComponent<Text>().font = font;
             answerText.GetComponent<Text>().fontStyle = FontStyle.Bold;
+            answerText.GetComponent<Text>().resizeTextForBestFit = true;
+            answerText.GetComponent<Text>().resizeTextMinSize = 14;
+            answerText.GetComponent<Text>().resizeTextMaxSize = 28;
 
             buttons[i] = btn;
             btnTexts[i] = answerText.GetComponent<Text>();
@@ -176,22 +200,28 @@ public class GameUI : MonoBehaviour
         GameObject restartBtnGO = new GameObject("RestartBtn");
         restartBtnGO.transform.SetParent(gameOverPanel.transform, false);
         Image rImg = restartBtnGO.AddComponent<Image>();
-        rImg.sprite = MakeRoundedRectSprite(16, 16);
+        rImg.sprite = MakeRoundedRectSprite(64, 64);
         rImg.type = Image.Type.Sliced;
-        rImg.color = new Color(0.2f, 0.5f, 1f);
+        rImg.color = accentBlue;
         Button rBtn = restartBtnGO.AddComponent<Button>();
         ColorBlock rColors = rBtn.colors;
-        rColors.highlightedColor = new Color(0.3f, 0.6f, 1f);
-        rColors.pressedColor = new Color(0.1f, 0.3f, 0.7f);
+        rColors.highlightedColor = new Color(0.4f, 0.8f, 1f);
+        rColors.pressedColor = new Color(0.1f, 0.5f, 0.8f);
         rBtn.colors = rColors;
+        
+        restartBtnGO.AddComponent<ButtonHoverAnimator>();
+        Shadow rShadow = restartBtnGO.AddComponent<Shadow>();
+        rShadow.effectColor = new Color(0, 0, 0, 0.3f);
+        rShadow.effectDistance = new Vector2(0, -3);
+
         RectTransform rrt = restartBtnGO.GetComponent<RectTransform>();
         rrt.anchorMin = new Vector2(0.5f, 0.5f);
         rrt.anchorMax = new Vector2(0.5f, 0.5f);
         rrt.pivot = new Vector2(0.5f, 0.5f);
-        rrt.sizeDelta = new Vector2(220, 60);
+        rrt.sizeDelta = new Vector2(240, 65);
         rrt.anchoredPosition = new Vector3(0, -160, 0);
 
-        GameObject restartText = CreateTextInParent(restartBtnGO, "\u21BB PLAY AGAIN", 26, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        GameObject restartText = CreateTextInParent(restartBtnGO, "\u21BB PLAY AGAIN", 26, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         restartText.GetComponent<Text>().font = font;
         restartText.GetComponent<Text>().fontStyle = FontStyle.Bold;
 
@@ -214,22 +244,28 @@ public class GameUI : MonoBehaviour
             GameObject b = new GameObject("PauseBtn_" + label.Replace(" ", ""));
             b.transform.SetParent(pausePanel.transform, false);
             Image bi = b.AddComponent<Image>();
-            bi.sprite = MakeRoundedRectSprite(16, 16);
+            bi.sprite = MakeRoundedRectSprite(64, 64);
             bi.type = Image.Type.Sliced;
             Button bb = b.AddComponent<Button>();
             ColorBlock bc = bb.colors;
-            bc.normalColor = new Color(0.15f, 0.18f, 0.25f);
-            bc.highlightedColor = new Color(0.35f, 0.4f, 0.55f);
-            bc.pressedColor = new Color(0.55f, 0.6f, 0.8f);
-            bc.fadeDuration = 0.1f;
+            bc.normalColor = btnNormal;
+            bc.highlightedColor = btnHighlight;
+            bc.pressedColor = btnPressed;
+            bc.fadeDuration = 0.15f;
             bb.colors = bc;
+            
+            b.AddComponent<ButtonHoverAnimator>();
+            Shadow btnShadow = b.AddComponent<Shadow>();
+            btnShadow.effectColor = new Color(0, 0, 0, 0.3f);
+            btnShadow.effectDistance = new Vector2(0, -3);
+
             RectTransform br = b.GetComponent<RectTransform>();
             br.anchorMin = new Vector2(0.5f, 0.5f);
             br.anchorMax = new Vector2(0.5f, 0.5f);
             br.pivot = new Vector2(0.5f, 0.5f);
             br.sizeDelta = new Vector2(300, 60);
             br.anchoredPosition = pos;
-            GameObject bt = CreateTextInParent(b, label, 24, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            GameObject bt = CreateTextInParent(b, label, 24, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             bt.GetComponent<Text>().font = font;
             bt.GetComponent<Text>().fontStyle = FontStyle.Bold;
             bb.onClick.AddListener(() => cb());
@@ -257,33 +293,26 @@ public class GameUI : MonoBehaviour
         GameObject exitBtnGO = new GameObject("ExitBtn");
         exitBtnGO.transform.SetParent(canvas.transform, false);
         Image eImg = exitBtnGO.AddComponent<Image>();
-        Texture2D eTex = new Texture2D(8, 8);
-        for (int x = 0; x < 8; x++)
-            for (int y = 0; y < 8; y++)
-            {
-                float dx = Mathf.Min(x, 7 - x);
-                float dy = Mathf.Min(y, 7 - y);
-                float d = Mathf.Sqrt(dx * dx + dy * dy);
-                eTex.SetPixel(x, y, d < 2 ? Color.clear : Color.white);
-            }
-        eTex.Apply();
-        eImg.sprite = Sprite.Create(eTex, new Rect(0, 0, 8, 8), new Vector2(0.5f, 0.5f), 8, 0, SpriteMeshType.FullRect, new Vector4(2, 2, 2, 2));
+        eImg.sprite = MakeRoundedRectSprite(32, 32);
         eImg.type = Image.Type.Sliced;
-        eImg.color = new Color(0.6f, 0.2f, 0.2f);
+        eImg.color = new Color(0.8f, 0.2f, 0.2f);
         Button eBtn = exitBtnGO.AddComponent<Button>();
         ColorBlock eColors = eBtn.colors;
-        eColors.normalColor = new Color(0.6f, 0.2f, 0.2f);
-        eColors.highlightedColor = new Color(0.8f, 0.3f, 0.3f);
-        eColors.pressedColor = new Color(0.4f, 0.1f, 0.1f);
-        eColors.fadeDuration = 0.1f;
+        eColors.normalColor = new Color(0.8f, 0.2f, 0.2f);
+        eColors.highlightedColor = new Color(0.9f, 0.3f, 0.3f);
+        eColors.pressedColor = new Color(0.6f, 0.1f, 0.1f);
+        eColors.fadeDuration = 0.15f;
         eBtn.colors = eColors;
+        
+        exitBtnGO.AddComponent<ButtonHoverAnimator>();
+        
         RectTransform ert = exitBtnGO.GetComponent<RectTransform>();
         ert.anchorMin = new Vector2(1, 0);
         ert.anchorMax = new Vector2(1, 0);
         ert.pivot = new Vector2(1, 0);
         ert.sizeDelta = new Vector2(200, 70);
         ert.anchoredPosition = new Vector3(-25, 25, 0);
-        GameObject exitText = CreateTextInParent(exitBtnGO, "\u2630 MENU", 32, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        GameObject exitText = CreateTextInParent(exitBtnGO, "\u2630 MENU", 32, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         exitText.GetComponent<Text>().font = font;
         exitText.GetComponent<Text>().fontStyle = FontStyle.Bold;
         eBtn.onClick.AddListener(() =>
@@ -295,23 +324,26 @@ public class GameUI : MonoBehaviour
         GameObject soundBtnGO = new GameObject("SoundBtn");
         soundBtnGO.transform.SetParent(canvas.transform, false);
         Image sImg = soundBtnGO.AddComponent<Image>();
-        sImg.sprite = MakeRoundedRectSprite(16, 16);
+        sImg.sprite = MakeRoundedRectSprite(64, 64);
         sImg.type = Image.Type.Sliced;
-        sImg.color = new Color(0.15f, 0.18f, 0.25f);
+        sImg.color = btnNormal;
         Button sBtn = soundBtnGO.AddComponent<Button>();
         ColorBlock sColors = sBtn.colors;
-        sColors.normalColor = new Color(0.15f, 0.18f, 0.25f);
-        sColors.highlightedColor = new Color(0.35f, 0.4f, 0.55f);
-        sColors.pressedColor = new Color(0.55f, 0.6f, 0.8f);
-        sColors.fadeDuration = 0.1f;
+        sColors.normalColor = btnNormal;
+        sColors.highlightedColor = btnHighlight;
+        sColors.pressedColor = btnPressed;
+        sColors.fadeDuration = 0.15f;
         sBtn.colors = sColors;
+        
+        soundBtnGO.AddComponent<ButtonHoverAnimator>();
+
         RectTransform srt = soundBtnGO.GetComponent<RectTransform>();
         srt.anchorMin = new Vector2(0, 0);
         srt.anchorMax = new Vector2(0, 0);
         srt.pivot = new Vector2(0, 0);
         srt.sizeDelta = new Vector2(240, 70);
         srt.anchoredPosition = new Vector3(25, 25, 0);
-        GameObject soundText = CreateTextInParent(soundBtnGO, AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 28, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        GameObject soundText = CreateTextInParent(soundBtnGO, AudioListener.volume > 0 ? "\u266B SOUND ON" : "\u266B SOUND OFF", 28, textLight, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         soundText.GetComponent<Text>().font = font;
         soundText.GetComponent<Text>().fontStyle = FontStyle.Bold;
         sBtn.onClick.AddListener(() =>
@@ -341,17 +373,23 @@ public class GameUI : MonoBehaviour
         {
             GameObject charInst = Instantiate(prefab);
             charInst.name = "Character";
+            // Parent to the GameUI root (NOT the Canvas) so it gets destroyed on exit
             charInst.transform.SetParent(transform);
-            // The PSD is 100 PPU, meaning it is huge in world space (~18 units tall). We scale it down.
+            
             charInst.transform.localScale = new Vector3(0.18f, 0.18f, 1);
             charInst.transform.position = new Vector3(-5.5f, 0.2f, 0);
+            
+            // Add a SortingGroup so the character renders as a cohesive unit above the background
+            UnityEngine.Rendering.SortingGroup sg = charInst.AddComponent<UnityEngine.Rendering.SortingGroup>();
+            sg.sortingOrder = 5;
+
             charInst.AddComponent<CharacterAnchor>();
             charInst.AddComponent<CharacterEmotion>();
-            // Add a script to make the children visible/animated properly if needed
         }
         else
         {
             GameObject charGO = new GameObject("Character");
+            // Parent to the GameUI root
             charGO.transform.SetParent(transform);
             charGO.transform.localScale = new Vector3(3.5f, 3.5f, 1);
             SpriteRenderer sr = charGO.AddComponent<SpriteRenderer>();
@@ -391,7 +429,7 @@ public class GameUI : MonoBehaviour
         cam.orthographic = true;
         cam.orthographicSize = 5;
         cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = new Color(0.06f, 0.07f, 0.12f);
+        cam.backgroundColor = bgDark;
         cam.transform.position = new Vector3(0, 0, -10);
 
         CreateBackground(canvas);
@@ -444,16 +482,26 @@ public class GameUI : MonoBehaviour
 
     Sprite MakeRoundedRectSprite(int w, int h)
     {
+        int radius = 16;
         Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
         for (int x = 0; x < w; x++)
+        {
             for (int y = 0; y < h; y++)
             {
                 float dx = Mathf.Min(x, w - 1 - x);
                 float dy = Mathf.Min(y, h - 1 - y);
-                float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                tex.SetPixel(x, y, dist < 3 ? Color.clear : Color.white);
+                if (dx < radius && dy < radius)
+                {
+                    float dist = Mathf.Sqrt((radius - dx) * (radius - dx) + (radius - dy) * (radius - dy));
+                    tex.SetPixel(x, y, dist > radius ? Color.clear : Color.white);
+                }
+                else
+                {
+                    tex.SetPixel(x, y, Color.white);
+                }
             }
+        }
         tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(3, 3, 3, 3));
+        return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
     }
 }

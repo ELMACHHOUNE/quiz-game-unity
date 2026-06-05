@@ -33,9 +33,11 @@ public class CharacterEmotion : MonoBehaviour
         foreach (Transform t in allChildren)
         {
             string n = t.name.ToLower();
-            if (n == "head" && head == null) head = t;
-            else if (n == "left-hand" && leftArm == null) leftArm = t;
-            else if (n == "right-hand" && rightArm == null) rightArm = t;
+            if (n.EndsWith("_pivot")) continue;
+            
+            if ((n.Contains("head") || n.Contains("face")) && head == null) head = t;
+            else if ((n.Contains("left") && (n.Contains("arm") || n.Contains("hand"))) && leftArm == null) leftArm = t;
+            else if ((n.Contains("right") && (n.Contains("arm") || n.Contains("hand"))) && rightArm == null) rightArm = t;
         }
 
         if (head != null) head = CreatePivot(head, -0.85f);      // Pivot near bottom of head (neck)
